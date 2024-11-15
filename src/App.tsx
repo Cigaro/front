@@ -1,24 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import Item from './modules/todoItem';
+import { getItems, ItemData } from './modules/requests';
+import { AxiosResponse } from 'axios';
+import { Flex } from 'antd';
+import { AddItem } from './modules/add';
 
 function App() {
+  const [data, setData] = useState<AxiosResponse>();
+
+  const render = () => {
+    getItems('/').then((response) => {
+      setData(response);
+    });
+  };
+
+  useEffect(() => {
+    render();
+    return () => {};
+  }, [setData]);
+
+  if (!data) return <></>;
+
+  const itemsData = data.data as Array<ItemData>;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='App'>
+      <Flex style={{ width: '100%' }} justify='center' vertical align='center'>
+        <AddItem render={render} />
+        <Flex vertical style={{ width: '50%' }}>
+          {itemsData.map((item, index) => {
+            return (
+              <Item
+                value={item.value}
+                _id={item._id}
+                status={item.status}
+                key={item._id}
+                render={render}
+              />
+            );
+          })}
+        </Flex>
+      </Flex>
     </div>
   );
 }
